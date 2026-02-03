@@ -6,16 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Concerns Log</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 
-    <style>
-    </style>
 
 </head>
 
 <body>
-
-    <!-- PARALLAX BACKGROUND -->
     <div class="parallax-bg"></div>
     <div class="parallax-overlay"></div>
 
@@ -23,10 +19,9 @@
 
         <!-- PAGE HEADER -->
         <div class="page-header text-center">
-            <h1 class="text-white">CASA MIRA SOUTH</h1>
-            <h3 class="text-white">Concerns Management Log</h3>
-            <p class="text-white mb-0">
-                Official record of submitted community concerns
+            <h1>CASA MIRA SOUTH</h1>
+            <p class="mb-0">
+                Records of submitted community concerns
             </p>
         </div>
 
@@ -79,12 +74,12 @@
 
                         <div class="form-group col-md-4">
                             <label>Block</label>
-                            <input type="number" min="0" class="form-control" id="block" required>
+                            <input type="number" class="form-control" id="block" required>
                         </div>
 
                         <div class="form-group col-md-4">
-                            <label>Unit</label>
-                            <input type="number" min="0" class="form-control" id="unit" required>
+                            <label>Lot</label>
+                            <input type="number" class="form-control" id="lot" required>
                         </div>
                     </div>
 
@@ -96,6 +91,9 @@
                             <option>Electricity</option>
                             <option>Security</option>
                             <option>Waste Collection</option>
+                            <option>Internet Connection</option>
+                            <option>Function Hall - Church</option>
+                            <option>Function Hall - Pool</option>
                         </select>
                     </div>
 
@@ -135,9 +133,10 @@
         </div>
 
         <!-- LIST -->
-        <ul class="list-group shadow-sm" id="concernsList"></ul>
+        <ul class="list-group shadow-sm mb-5" id="concernsList"></ul>
 
     </div>
+
 
 
     <!-- Firebase -->
@@ -153,6 +152,7 @@
             messagingSenderId: "895178702145",
             appId: "1:895178702145:web:979e69da66d24c6d8975c0"
         };
+
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -171,22 +171,40 @@
             s === "managed" ? "badge-primary" :
                 s === "overdue" ? "badge-danger" : "badge-warning";
 
-        form.addEventListener("submit", async e => {
+        form.addEventListener("submit", async (e) => {
             e.preventDefault();
+
+            const initials = document.getElementById("initials").value.trim();
+            const name = document.getElementById("name").value.trim() || "Anonymous";
+            const contact = document.getElementById("contact").value.trim();
+            const phase = document.getElementById("phase").value;
+            const block = document.getElementById("block").value.trim();
+            const lot = document.getElementById("lot").value.trim();
+            const type = document.getElementById("type").value;
+            const details = document.getElementById("details").value.trim();
+
+            // Extra safety validation
+            if (!initials || !contact || !phase || !block || !lot || !type || !details) {
+                alert("Please complete all required fields.");
+                return;
+            }
+
             await addDoc(concernsCol, {
-                initials: initials.value,
-                name: name.value,
-                contact: contact.value,
-                phase: phase.value,
-                block: block.value,
-                unit: unit.value,
-                type: type.value,
-                concern: details.value,
+                initials,
+                name,
+                contact,
+                phase,
+                block,
+                lot,
+                type,
+                details,
                 status: "pending",
                 timestamp: new Date()
             });
+
             form.reset();
         });
+
 
         const render = () => {
             const text = searchInput.value.toLowerCase();
@@ -205,18 +223,18 @@
             list.innerHTML = "";
             filtered.forEach(c => {
                 list.innerHTML += `
-      <li class="list-group-item">
-        <div class="d-flex justify-content-between">
-          <strong>${c.initials} (${c.name})</strong>
-          <span class="badge ${badge(c.status)}">${c.status}</span>
-        </div>
-        <div class="text-muted">
-          ${c.type} • Phase ${c.phase}, Block ${c.block}, Unit ${c.unit}
-        </div>
-        <div class="mt-2">${c.details}</div>
-        <small class="text-muted">${c.timestamp.toDate().toLocaleString()}</small>
-      </li>
-    `;
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                    <strong>${c.initials} (${c.name})
+                    <small class="badge badge-info">${c.timestamp.toDate().toLocaleString()}</small></strong>
+                    <span class="badge ${badge(c.status)}">${c.status}</span>
+                    </div>
+                    <div class="text-muted">
+                    <small>${c.type} • Phase ${c.phase}, Block ${c.block}, Lot ${c.lot}</small>
+                    </div>
+                    <div class="mt-2 p-2 bg-light">${c.details}</div>
+                </li>
+                `;
             });
         };
 
