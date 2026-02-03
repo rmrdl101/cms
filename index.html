@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concerns Log</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
+
+    <style>
+    </style>
+
+</head>
+
+<body>
+
+    <!-- PARALLAX BACKGROUND -->
+    <div class="parallax-bg"></div>
+    <div class="parallax-overlay"></div>
+
+    <div class="container mt-5">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header text-center">
+            <h1 class="text-white">CASA MIRA SOUTH</h1>
+            <h3 class="text-white">Concerns Management Log</h3>
+            <p class="text-white mb-0">
+                Official record of submitted community concerns
+            </p>
+        </div>
+
+        <!-- FORM -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                Submit a Concern
+            </div>
+            <div class="card-body">
+                <form id="concernForm">
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Initials (Alias)</label>
+                            <input type="text" class="form-control" id="initials" required>
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Full Name</label>
+                            <input type="text" class="form-control" id="name">
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Contact Number</label>
+                            <input type="tel" class="form-control" id="contact" required>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Phase</label>
+                            <select class="form-control" id="phase" required>
+                                <option value="">Select Phase</option>
+                                <option>5A</option>
+                                <option>4B.2</option>
+                                <option>4B.1</option>
+                                <option>4A</option>
+                                <option>3A.2</option>
+                                <option>3A.1</option>
+                                <option>3A</option>
+                                <option>3B</option>
+                                <option>2B</option>
+                                <option>2A</option>
+                                <option>1B</option>
+                                <option>1A</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Block</label>
+                            <input type="number" min="0" class="form-control" id="block" required>
+                        </div>
+
+                        <div class="form-group col-md-4">
+                            <label>Unit</label>
+                            <input type="number" min="0" class="form-control" id="unit" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Concern Type</label>
+                        <select class="form-control" id="type" required>
+                            <option value="">Select Type</option>
+                            <option>Water</option>
+                            <option>Electricity</option>
+                            <option>Security</option>
+                            <option>Waste Collection</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Concern Details</label>
+                        <textarea class="form-control" id="details" rows="3" required></textarea>
+                    </div>
+
+                    <button class="btn btn-primary btn-block">
+                        Submit Concern
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- SEARCH & FILTER -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header">
+                Search & Filter Records
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="col-md-8 mb-2">
+                        <input id="searchInput" class="form-control"
+                            placeholder="Search by name, location, or concern...">
+                    </div>
+                    <div class="col-md-4">
+                        <select id="statusFilter" class="form-control">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="managed">Managed</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIST -->
+        <ul class="list-group shadow-sm" id="concernsList"></ul>
+
+    </div>
+
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBrdyh445GRgA-rH4RHggWxhAMcDyf7nJI",
+            authDomain: "cms-project-d2bc9.firebaseapp.com",
+            projectId: "cms-project-d2bc9",
+            storageBucket: "cms-project-d2bc9.firebasestorage.app",
+            messagingSenderId: "895178702145",
+            appId: "1:895178702145:web:979e69da66d24c6d8975c0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const concernsCol = collection(db, "concerns");
+
+        const form = document.getElementById("concernForm");
+        const list = document.getElementById("concernsList");
+        const searchInput = document.getElementById("searchInput");
+        const statusFilter = document.getElementById("statusFilter");
+
+        let allConcerns = [];
+
+        const statusOrder = { pending: 1, overdue: 2, managed: 3 };
+
+        const badge = s =>
+            s === "managed" ? "badge-primary" :
+                s === "overdue" ? "badge-danger" : "badge-warning";
+
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+            await addDoc(concernsCol, {
+                initials: initials.value,
+                name: name.value,
+                contact: contact.value,
+                phase: phase.value,
+                block: block.value,
+                unit: unit.value,
+                type: type.value,
+                concern: details.value,
+                status: "pending",
+                timestamp: new Date()
+            });
+            form.reset();
+        });
+
+        const render = () => {
+            const text = searchInput.value.toLowerCase();
+            const status = statusFilter.value;
+
+            const filtered = allConcerns
+                .filter(c =>
+                    (status === "all" || c.status === status) &&
+                    Object.values(c).join(" ").toLowerCase().includes(text)
+                )
+                .sort((a, b) =>
+                    statusOrder[a.status] - statusOrder[b.status] ||
+                    a.timestamp.seconds - b.timestamp.seconds
+                );
+
+            list.innerHTML = "";
+            filtered.forEach(c => {
+                list.innerHTML += `
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between">
+          <strong>${c.initials} (${c.name})</strong>
+          <span class="badge ${badge(c.status)}">${c.status}</span>
+        </div>
+        <div class="text-muted">
+          ${c.type} • Phase ${c.phase}, Block ${c.block}, Unit ${c.unit}
+        </div>
+        <div class="mt-2">${c.details}</div>
+        <small class="text-muted">${c.timestamp.toDate().toLocaleString()}</small>
+      </li>
+    `;
+            });
+        };
+
+        onSnapshot(query(concernsCol), snap => {
+            allConcerns = snap.docs.map(d => d.data());
+            render();
+        });
+
+        searchInput.addEventListener("input", render);
+        statusFilter.addEventListener("change", render);
+    </script>
+</body>
+
+</html>

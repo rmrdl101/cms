@@ -1,0 +1,97 @@
+html, body {
+    overflow-x: hidden;
+}
+
+body {
+    background: none;
+}
+
+/* PARALLAX BACKGROUND */
+.parallax-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("../img/casamirasouth-rowhouse-850x492.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    z-index: -2;
+    transform: scale(1.05);
+}
+
+/* BLUR + DARK OVERLAY */
+.parallax-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.35);
+    z-index: -1;
+}
+
+/* CONTENT */
+.container {
+    position: relative;
+}
+
+.card {
+    background-color: rgba(255, 255, 255, 0.97);
+}
+
+/* HEADER */
+.page-header h1,
+.page-header p {
+    color: #ffffff;
+}
+
+.page-header {
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.page-header h1 {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* FORMS & LIST */
+.card-header {
+    background-color: #ffffff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+label {
+    font-weight: 500;
+}
+
+.list-group-item {
+    border-left: 4px solid #dee2e6;
+}
+
+.badge {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+}
+
+/* MOBILE SAFETY */
+@media (max-width: 768px) {
+    .parallax-bg {
+        background-attachment: scroll;
+    }
+}
+
+.cms-green {
+    color:#4e801f!important;
+}
